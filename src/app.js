@@ -3,6 +3,7 @@ import cors from 'cors';
 import { crearUsuarioRepository } from './repositories/usuario.repository.js';
 import { crearAuthService } from './services/auth.service.js';
 import { crearAuthRouter } from './routes/auth.routes.js';
+import { crearAutenticacion } from './middlewares/autenticacion.js';
 
 export function crearApp(opciones) {
   const app = express();
@@ -20,7 +21,8 @@ export function crearApp(opciones) {
   });
 
   const usuarios = crearUsuarioRepository(opciones.pool);
-  app.use('/api/v1/auth', crearAuthRouter(crearAuthService(usuarios)));
+  const seguridad = crearAutenticacion(usuarios);
+  app.use('/api/v1/auth', crearAuthRouter(crearAuthService(usuarios), seguridad));
 
   app.use((req, res) => {
     res.status(404).json({ mensaje: 'Ruta no encontrada.', detalles: [] });

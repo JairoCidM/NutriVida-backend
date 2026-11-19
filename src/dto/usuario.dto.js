@@ -76,6 +76,17 @@ export function crearRegistroEntradaDto(cuerpo) {
   return datos;
 }
 
+export function crearLoginEntradaDto(cuerpo) {
+  validarObjeto(cuerpo);
+  const correo = texto(cuerpo.correo).toLowerCase();
+  const contrasena = typeof cuerpo.contrasena === 'string' ? cuerpo.contrasena : '';
+  const errores = [];
+  if (correo === '') errores.push('El correo es requerido.');
+  if (contrasena === '') errores.push('La contraseña es requerida.');
+  if (errores.length) throw new HttpError(400, 'Datos de inicio de sesión inválidos.', errores);
+  return { correo: correo, contrasena: contrasena };
+}
+
 export function crearUsuarioSalidaDto(fila) {
   return {
     id: fila.id,
