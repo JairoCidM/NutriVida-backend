@@ -11,6 +11,17 @@ function traducirDuplicado(error) {
 }
 
 export function crearUsuarioRepository(pool) {
+  async function listar(filtros) {
+    const valores = [];
+    let donde = '';
+    if (filtros.rol) {
+      valores.push(filtros.rol);
+      donde = ' WHERE r.codigo = $1';
+    }
+    const resultado = await pool.query('SELECT ' + COLUMNAS + DESDE + donde + ' ORDER BY u.id', valores);
+    return resultado.rows;
+  }
+
   async function buscarPorId(id) {
     const resultado = await pool.query('SELECT ' + COLUMNAS + DESDE + ' WHERE u.id = $1', [id]);
     return resultado.rows[0] || null;
@@ -34,5 +45,35 @@ export function crearUsuarioRepository(pool) {
     }
   }
 
-  return { buscarPorId: buscarPorId, buscarPorCorreo: buscarPorCorreo, crear: crear, traducirDuplicado: traducirDuplicado };
+  async function actualizar(id, cambios) {
+    const columnas = {
+      nombre: 'nombre',
+      apellidos: 'apellidos',
+      telefono: 'telefono',
+      direccion: 'direccion',
+      contrasenaHash: 'contrasena_hash',
+      nutricionistaCodigo: 'nutricionista_codigo',
+      activo: 'activo'
+    };
+    const asignaciones = [];
+    const valores = [];
+    for (const campo of Object.keys(columnas)) {
+      if (cambios[campo] !== undefined) {
+        valores.push(cambios[campo]);
+        asignaciones.push(columnas[campo] + ' = $' + valores.length);
+      }
+    }
+    if (cambios.rol !== undefined) {
+      valores.push(cambios.rol);
+      asignaciones.push('rol_id = (SELECT id FROM roles WHERE codigo = $' + valores.length + ')');
+    }
+    valores.push(id);
+    await pool.query(
+      'UPDATE usuarios SET ' + asignaciones.join(', ') + ', actualizado_en = NOW() WHERE id = $' + valores.length,
+      valores
+    );
+    return buscarPorId(id);
+  }
+
+  return { listar: listar, buscarPorId: buscarPorId, buscarPorCorreo: buscarPorCorreo, crear: crear, actualizar: actualizar };
 }

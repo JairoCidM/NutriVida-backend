@@ -87,6 +87,71 @@ export function crearLoginEntradaDto(cuerpo) {
   return { correo: correo, contrasena: contrasena };
 }
 
+function validarRolYPerfil(datos, errores) {
+  if (!ROLES.includes(datos.rol)) errores.push('El rol debe ser: ' + ROLES.join(', ') + '.');
+  if (datos.rol === 'nutricionista' && !NUTRICIONISTAS.includes(datos.nutricionistaCodigo)) {
+    errores.push('Un nutricionista debe tener un perfil: ' + NUTRICIONISTAS.join(', ') + '.');
+  }
+}
+
+export function crearAltaEntradaDto(cuerpo) {
+  validarObjeto(cuerpo);
+  const datos = {
+    run: texto(cuerpo.run).toUpperCase(),
+    nombre: texto(cuerpo.nombre),
+    apellidos: texto(cuerpo.apellidos),
+    correo: texto(cuerpo.correo).toLowerCase(),
+    contrasena: cuerpo.contrasena,
+    telefono: texto(cuerpo.telefono),
+    direccion: texto(cuerpo.direccion),
+    rol: texto(cuerpo.rol),
+    nutricionistaCodigo: texto(cuerpo.nutricionistaCodigo) || null
+  };
+  const errores = [];
+  validarRun(datos.run, errores);
+  validarCorreo(datos.correo, errores);
+  validarContrasena(datos.contrasena, errores);
+  validarDatosPersonales(datos, errores, false);
+  validarRolYPerfil(datos, errores);
+  if (errores.length) throw new HttpError(400, 'Datos del usuario inválidos.', errores);
+  if (datos.rol !== 'nutricionista') datos.nutricionistaCodigo = null;
+  return datos;
+}
+
+export function crearActualizacionEntradaDto(cuerpo, esAdministrador) {
+  validarObjeto(cuerpo);
+  const datos = {
+    nombre: texto(cuerpo.nombre),
+    apellidos: texto(cuerpo.apellidos),
+    telefono: texto(cuerpo.telefono),
+    direccion: texto(cuerpo.direccion)
+  };
+  const errores = [];
+  validarDatosPersonales(datos, errores, false);
+  if (cuerpo.contrasena !== undefined && cuerpo.contrasena !== '') {
+    validarContrasena(cuerpo.contrasena, errores);
+    datos.contrasena = cuerpo.contrasena;
+  }
+
+  const cambiaPermisos = cuerpo.rol !== undefined || cuerpo.activo !== undefined || cuerpo.nutricionistaCodigo !== undefined;
+  if (cambiaPermisos && !esAdministrador) {
+    throw new HttpError(403, 'Solo el administrador puede cambiar el rol o el estado de una cuenta.');
+  }
+  if (esAdministrador && cuerpo.rol !== undefined) {
+    datos.rol = texto(cuerpo.rol);
+    datos.nutricionistaCodigo = texto(cuerpo.nutricionistaCodigo) || null;
+    validarRolYPerfil(datos, errores);
+    if (datos.rol !== 'nutricionista') datos.nutricionistaCodigo = null;
+  }
+  if (esAdministrador && cuerpo.activo !== undefined) {
+    if (typeof cuerpo.activo !== 'boolean') errores.push('El campo activo debe ser true o false.');
+    else datos.activo = cuerpo.activo;
+  }
+
+  if (errores.length) throw new HttpError(400, 'Datos del usuario inválidos.', errores);
+  return datos;
+}
+
 export function crearUsuarioSalidaDto(fila) {
   return {
     id: fila.id,
