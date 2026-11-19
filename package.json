@@ -1,0 +1,18 @@
+{
+  "name": "nutrivida-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "API REST de NutriVida con Express, PostgreSQL y JWT. DSY1104 - Equipo 6.",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "node --watch --env-file-if-exists=.env src/server.js",
+    "start": "node --env-file-if-exists=.env src/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  }
+}
