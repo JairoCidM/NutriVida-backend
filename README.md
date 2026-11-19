@@ -262,3 +262,13 @@ Pruebas manuales con `curl` contra la API y PostgreSQL en la EC2, el 18 de novie
 
 Pendiente: pruebas automatizadas con `node:test` y `supertest`, como el proyecto de ejemplo de la guía 20, y las pruebas desde Postman con la IP pública de la EC2.
 
+## Próximos pasos
+
+1. Documentar todos los endpoints con Swagger en `/api/docs`.
+2. Catálogo: tablas `categorias` y `servicios`, y su CRUD con permisos por rol.
+3. Citas: tabla `citas`, el flujo de solicitud y la regla de horario ocupado (409).
+4. Conectar el frontend con Axios (`src/services/api.js`), guardando la sesión en `sessionStorage`.
+5. Abrir el puerto 3000 en el grupo de seguridad e indicar aquí la dirección pública de Swagger.
+6. Pasar la base de datos a Amazon RDS siguiendo la guía 18.
+
+
