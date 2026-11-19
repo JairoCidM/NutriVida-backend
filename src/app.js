@@ -7,8 +7,13 @@ export function crearApp(opciones) {
   app.use(cors({ origin: opciones.origenes, methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'] }));
   app.use(express.json({ limit: '16kb' }));
 
-  app.get('/api/v1/health', (req, res) => {
-    res.json({ estado: 'ok' });
+  app.get('/api/v1/health', async (req, res) => {
+    try {
+      await opciones.pool.query('SELECT 1');
+      res.json({ estado: 'ok', baseDeDatos: 'conectada' });
+    } catch (error) {
+      res.status(503).json({ estado: 'error', baseDeDatos: 'sin conexión' });
+    }
   });
 
   app.use((req, res) => {
