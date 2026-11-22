@@ -8,23 +8,31 @@ API REST de la **Clínica Nutricional NutriVida** (caso Forma D, Temuco), constr
 
 ## Estado del trabajo
 
-Avance al 18 de noviembre de 2026. **Listo** significa probado en Swagger o Postman con el resultado guardado en la base de datos. **En avance** significa que hay código y commits, aunque falte terminarlo o probarlo.
+Avance al 22 de noviembre de 2026. Cada operación tiene uno de estos estados:
+
+- **Probado:** implementado y comprobado en Swagger, Postman o el frontend, con el resultado guardado en la base de datos.
+- **Implementado:** el código está en el repositorio, pero falta probarlo.
+- **Diseñado:** definido en este README, sin código todavía.
+- **Pendiente:** aún no se diseña.
 
 | Operación | Ruta | Estado | Cómo se comprobó |
 |---|---|---|---|
-| Tabla de usuarios | `db/esquema.sql` | Listo | Tablas `roles` y `usuarios` en PostgreSQL. Los datos siguen después de reiniciar la API. Contraseñas con hash bcrypt |
-| Registro de paciente | `POST /api/v1/auth/register` | Listo | 201 con el usuario creado y rol `paciente`; 400 con datos inválidos; 409 con RUN o correo repetido |
-| Inicio de sesión | `POST /api/v1/auth/login` | Listo | 200 con JWT y vigencia; 401 genérico con credenciales incorrectas o cuenta desactivada |
-| Usuario autenticado | `GET /api/v1/auth/me` | Listo | 200 con token válido; 401 sin token o con token alterado |
-| Listar usuarios | `GET /api/v1/usuarios` | Listo | 200 para administrador, con filtro `?rol=`; 403 para otros roles |
-| Ver un usuario | `GET /api/v1/usuarios/{id}` | Listo | 200 para el administrador o la misma persona; 403 si el id es de otra persona; 404 si no existe |
-| Crear usuario con rol | `POST /api/v1/usuarios` | Listo | 201 para administrador, con rol y perfil de nutricionista |
-| Modificar usuario | `PUT /api/v1/usuarios/{id}` | Listo | 200 con datos válidos; 403 si un no administrador intenta cambiar rol o estado; 409 si el administrador intenta cambiar su propio rol |
-| Desactivar usuario | `DELETE /api/v1/usuarios/{id}` | Listo | 204 y la cuenta ya no inicia sesión; 409 si el administrador intenta desactivarse a sí mismo |
-| Documentación Swagger | `/api/docs` | Pendiente | Domingo 22, con todos los endpoints anteriores |
-| Catálogo de servicios | `/api/v1/servicios` | Pendiente | Semana 16 |
-| Citas (flujo principal) | `/api/v1/citas` | Pendiente | Semana 16, con la regla de horario ocupado (409) |
-| Integración con el frontend | Axios en React | Pendiente | Semana 16 |
+| Tabla de usuarios | `db/esquema.sql` | Probado | Tablas `roles` y `usuarios` en PostgreSQL. Los datos siguen después de reiniciar la API. Contraseñas con hash bcrypt |
+| Registro de paciente | `POST /api/v1/auth/register` | Probado | 201 con el usuario creado y rol `paciente`; 400 con datos inválidos; 409 con RUN o correo repetido |
+| Inicio de sesión | `POST /api/v1/auth/login` | Probado | 200 con JWT y vigencia; 401 genérico con credenciales incorrectas o cuenta desactivada |
+| Usuario autenticado | `GET /api/v1/auth/me` | Probado | 200 con token válido; 401 sin token o con token alterado |
+| Listar usuarios | `GET /api/v1/usuarios` | Probado | 200 para administrador, con filtro `?rol=`; 403 para otros roles |
+| Ver un usuario | `GET /api/v1/usuarios/{id}` | Probado | 200 para el administrador o la misma persona; 403 si el id es de otra persona; 404 si no existe |
+| Crear usuario con rol | `POST /api/v1/usuarios` | Probado | 201 para administrador, con rol y perfil de nutricionista |
+| Modificar usuario | `PUT /api/v1/usuarios/{id}` | Probado | 200 con datos válidos; 403 si un no administrador intenta cambiar rol o estado; 409 si el administrador intenta cambiar su propio rol |
+| Desactivar usuario | `DELETE /api/v1/usuarios/{id}` | Probado | 204 y la cuenta ya no inicia sesión; 409 si el administrador intenta desactivarse a sí mismo |
+| Documentación Swagger | `/api/docs` | Probado | Todos los endpoints con ejemplos ficticios y errores. Con **Authorize** y un token de administrador, `GET /api/v1/usuarios` responde 200 |
+| Inicio de sesión desde el frontend | Página Iniciar sesión (Axios) | Probado | El formulario muestra "Ingresando...", entra al panel del rol y muestra el error genérico si las credenciales son incorrectas |
+| Registro desde el frontend | Página Crear cuenta (Axios) | Probado | Muestra "Creando cuenta...", luego el aviso de éxito en Iniciar sesión, y los errores 400 y 409 de la API |
+| Sesión en el frontend | `SesionProvider` y `sessionStorage` | Probado | La sesión sigue al recargar la página y se borra al cerrar sesión o si el token vence |
+| Administración de usuarios desde el frontend | Páginas Admin · Usuarios (Axios) | Diseñado | Antes de la presentación del jueves 26 |
+| Catálogo de servicios | `/api/v1/servicios` | Diseñado | Semana 16 |
+| Citas (flujo principal) | `/api/v1/citas` | Diseñado | Semana 16, con la regla de horario ocupado (409) |
 | Despliegue con Amazon RDS | Guía 18 | Pendiente | Mismo código; solo cambian las variables de conexión |
 
 ## Alcance
@@ -47,7 +55,7 @@ Reportes, categorías, servicios críticos, historial, perfil y comprobante qued
 | Acceso a datos | Paquete `pg` con consultas parametrizadas | Los valores viajan separados del SQL (`$1`, `$2`), lo que evita la inyección SQL |
 | Contraseñas | bcrypt (`bcryptjs`), costo 12 | Ver la sección Seguridad |
 | Autenticación | JWT firmado con HS256 (`jsonwebtoken`) | Ver la sección Seguridad |
-| Documentación | OpenAPI 3 con Swagger UI (`swagger-ui-express`), en preparación | La documentación se probará desde el navegador y vivirá junto al código |
+| Documentación | OpenAPI 3 con Swagger UI (`swagger-ui-express`) | La documentación se prueba desde el navegador y vive junto al código |
 | Límite de intentos | `express-rate-limit` en el login | 10 intentos cada 15 minutos por IP, para frenar ataques de fuerza bruta |
 | CORS | `cors` con `CORS_ORIGINS` | Solo el origen del frontend puede leer las respuestas. CORS no reemplaza la autorización |
 
@@ -97,20 +105,27 @@ Misma división que la guía 19, con la estructura del proyecto de ejemplo de la
 | Acceso a datos | `src/repositories/` | Consultas SQL parametrizadas a PostgreSQL |
 | Seguridad | `src/security/`, `src/middlewares/` | Hash de contraseñas, emisión y verificación del JWT, y control de roles |
 | Conexión | `src/db/pool.js` | Grupo de conexiones a PostgreSQL configurado por variables de entorno |
+| Documentación | `src/docs/openapi.js` | Contrato OpenAPI que muestra Swagger |
 | Base de datos | `db/`, `scripts/` | Esquema SQL, datos iniciales y script para crearlos |
 
 **Reparto del equipo:**
 
 | Integrante | Parte | Estado |
 |---|---|---|
-| Jairo Cid | Base del proyecto, conexión a PostgreSQL, usuarios y autenticación con JWT | Listo |
-| Anita Olivares | Por definir: catálogo, citas o integración con el frontend | Pendiente |
-| Isidora Quinteros | README del backend: decisiones, diseño de datos, seguridad y estado del trabajo | Listo |
-| Isidora Quinteros | Por definir: catálogo, citas o integración con el frontend | Pendiente |
+| Jairo Cid | Base del proyecto, conexión a PostgreSQL, usuarios y autenticación con JWT | Probado |
+| Isidora Quinteros | README del backend, documentación con Swagger e integración del inicio de sesión y el registro en el frontend | Probado |
 
 ## API y documentación viva
 
-La documentación con Swagger UI se agregará en `/api/docs` para el domingo 22. Mientras tanto, los endpoints se prueban con Postman o `curl` en `http://localhost:3000`. Desde otro equipo se usa la IP pública de la EC2 en lugar de `localhost`, con el puerto 3000 abierto en el grupo de seguridad.
+Swagger UI muestra y permite probar todos los endpoints:
+
+- **Dirección pública:** `http://IP_PUBLICA_EC2:3000/api/docs`
+- **En la misma EC2:** `http://localhost:3000/api/docs`
+- **Contrato OpenAPI:** `/api/docs/openapi.json`
+
+Para probar una ruta protegida: ejecutar `POST /api/v1/auth/login`, copiar el `accessToken`, presionar **Authorize**, pegarlo y luego probar, por ejemplo, `GET /api/v1/usuarios`.
+
+La IP pública de AWS Academy cambia cada vez que se reinicia el laboratorio, así que hay que revisarla antes de presentar. El puerto 3000 debe estar abierto en el grupo de seguridad de la EC2 para la IP de quien la consulta.
 
 Todas las respuestas de error tienen la misma forma: `{ "mensaje": "...", "detalles": [] }`.
 
@@ -228,7 +243,7 @@ Requisitos: Node.js 24, PostgreSQL 16 o superior y Git.
    ```bash
    npm start
    ```
-   La terminal muestra `API de NutriVida escuchando en el puerto 3000`. Para comprobarlo, se abre `http://localhost:3000/api/v1/health`, que responde `{"estado":"ok","baseDeDatos":"conectada"}`.
+   La terminal muestra `API de NutriVida escuchando en el puerto 3000`. Para comprobarlo, se abre `http://localhost:3000/api/v1/health`, que responde `{"estado":"ok","baseDeDatos":"conectada"}`, y luego `http://localhost:3000/api/docs`.
 
 Cuentas de prueba (datos ficticios, las mismas del frontend):
 
@@ -259,16 +274,19 @@ Pruebas manuales con `curl` contra la API y PostgreSQL en la EC2, el 18 de novie
 | Administrador intenta desactivarse a sí mismo | 409 | 409 |
 | Usuario inexistente / id no numérico | 404 / 400 | 404 / 400 |
 | Reiniciar la API y volver a listar | Los usuarios siguen | Siguen los 8 usuarios iniciales |
+| Swagger: login, Authorize con el token y `GET /api/v1/usuarios` | 200 con la lista | 200 |
+| Swagger: `GET /api/v1/usuarios` sin Authorize | 401 | 401 |
+| Frontend: iniciar sesión como administrador y recargar la página | Entra al panel y la sesión sigue | Entra al panel y la sesión sigue |
+| Frontend: contraseña incorrecta | Mensaje de error genérico | "Correo o contraseña incorrectos." |
+| Frontend: crear cuenta nueva y luego entrar con ella | Aviso de éxito y entra al panel de paciente | Aviso de éxito y entra al panel de paciente |
+| Frontend: crear cuenta con un correo ya registrado | Mensaje del 409 | "Ya existe un usuario con ese RUN o correo." |
 
-Pendiente: pruebas automatizadas con `node:test` y `supertest`, como el proyecto de ejemplo de la guía 20, y las pruebas desde Postman con la IP pública de la EC2.
+Pendiente: pruebas automatizadas con `node:test` y `supertest`, como el proyecto de ejemplo de la guía 20.
 
 ## Próximos pasos
 
-1. Documentar todos los endpoints con Swagger en `/api/docs`.
+1. Conectar las páginas de administración de usuarios con Axios: lista, nuevo, editar y activar o desactivar.
 2. Catálogo: tablas `categorias` y `servicios`, y su CRUD con permisos por rol.
 3. Citas: tabla `citas`, el flujo de solicitud y la regla de horario ocupado (409).
-4. Conectar el frontend con Axios (`src/services/api.js`), guardando la sesión en `sessionStorage`.
-5. Abrir el puerto 3000 en el grupo de seguridad e indicar aquí la dirección pública de Swagger.
-6. Pasar la base de datos a Amazon RDS siguiendo la guía 18.
-
-
+4. Desplegar el frontend en la EC2 y anotar su dirección pública.
+5. Pasar la base de datos a Amazon RDS siguiendo la guía 18.
