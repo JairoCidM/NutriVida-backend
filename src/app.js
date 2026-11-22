@@ -1,5 +1,7 @@
 import express from 'express';
 import cors from 'cors';
+import swaggerUi from 'swagger-ui-express';
+import { documentoOpenApi } from './docs/openapi.js';
 import { crearUsuarioRepository } from './repositories/usuario.repository.js';
 import { crearAuthService } from './services/auth.service.js';
 import { crearAuthRouter } from './routes/auth.routes.js';
@@ -21,6 +23,11 @@ export function crearApp(opciones) {
       res.status(503).json({ estado: 'error', baseDeDatos: 'sin conexión' });
     }
   });
+
+  app.get('/api/docs/openapi.json', (req, res) => {
+    res.json(documentoOpenApi);
+  });
+  app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(documentoOpenApi, { customSiteTitle: 'API de NutriVida' }));
 
   const usuarios = crearUsuarioRepository(opciones.pool);
   const seguridad = crearAutenticacion(usuarios);
